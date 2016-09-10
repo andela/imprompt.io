@@ -170,6 +170,10 @@ function listenForAvailability(intent, session, callback) {
     var shouldEndSession = false;
     var participants = data.participants;
 
+    // store organizer and participant data in the session
+    sessionAttributes.organizer = data.organizer;
+    sessionAttributes.participants = data.participants;
+
     for (var i = 0; i < participants.length; i++) {
       if (participants[i].status) {
         speechOutput = speechOutput + " " + participants[i].name + " is available ";
