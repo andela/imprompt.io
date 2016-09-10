@@ -131,20 +131,21 @@ function handleSessionEndRequest(callback) {
  * Checks someone's availability and prepares the speech to reply to the user.
  */
 function checkAvailability(intent, session, callback) {
-  var cardTitle = intent.name;
-  var nameOneSlot = intent.slots.NameOne;
-  var nameTwoSlot = intent.slots.NameTwo;
-  var repromptText = "";
+  var cardTitle         = intent.name;
+  var nameOneSlot       = intent.slots.NameOne;
+  var nameTwoSlot       = intent.slots.NameTwo;
+  var repromptText      = "";
   var sessionAttributes = {};
-  var shouldEndSession = false;
-  var speechOutput = "";
+  var shouldEndSession  = false;
+  var speechOutput      = "";
 
   if (nameOneSlot || nameTwoSlot) {
       var nameOne = nameOneSlot.value;
       var nameTwo = nameTwoSlot.value;
 
-      checkName(nameOne);
       listenForAvailability(intent, session, callback);
+
+      checkName(nameOne);
   } else {
       speechOutput = "I'm not sure who they are. Please try again";
       callback(sessionAttributes,
