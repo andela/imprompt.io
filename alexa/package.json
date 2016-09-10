@@ -1,0 +1,9 @@
+{
+  "name": "impromptu",
+  "version": "1.0.0",
+  "description": "",
+  "main": "impromptu.js",
+  "dependencies": {
+    "node-redis-pubsub": "0.9.0"
+  }
+}

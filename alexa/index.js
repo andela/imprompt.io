@@ -7,6 +7,8 @@
  * http://amzn.to/1LGWsLG
  */
 
+ var nrp = require('./nrp.js');
+
 // Route the incoming request based on type (LaunchRequest, IntentRequest,
 // etc.) The JSON body of the request is provided in the event parameter.
 exports.handler = function (event, context) {
