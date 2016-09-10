@@ -140,6 +140,12 @@ function checkAvailability(intent, session, callback) {
   if (nameOneSlot || nameTwoSlot) {
       var nameOne = nameOneSlot.value;
       var nameTwo = nameTwoSlot.value;
+
+      // Publish to Redis
+
+      // subscribing to redis reponse
+
+      //
       speechOutput = nameOne + " and " + nameTwo + " are both available.";
   } else {
       speechOutput = "I'm not sure who they are. Please try again";
