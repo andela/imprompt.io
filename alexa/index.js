@@ -142,13 +142,44 @@ function checkAvailability(intent, session, callback) {
   if (nameOneSlot || nameTwoSlot) {
       var nameOne = nameOneSlot.value;
       var nameTwo = nameTwoSlot.value;
-      speechOutput = nameOne + " and " + nameTwo + " are both available.";
+
+      checkName(nameOne);
+      listenForAvailability(intent, session, callback);
   } else {
       speechOutput = "I'm not sure who they are. Please try again";
+      callback(sessionAttributes,
+           buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
   }
+}
 
-  callback(sessionAttributes,
-       buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+function checkName(name) {
+  nrp.emit("availability-check", {
+    name: name,
+    timestamp: new Date()
+  });
+}
+
+function listenForAvailability(intent, session, callback) {
+  nrp.on("availability-response", function(data, channel) {
+    var cardTitle = intent.name;
+    var name      = data.name;
+    var status    = data.status;
+    var message   = data.message;
+    var sessionAttributes = {};
+    var repromptText = "";
+    var shouldEndSession = false;
+
+    if (status === true) {
+      speechOutput = name + " is available.";
+    } else {
+      speechOutput = name + " is not available.";
+    }
+
+    nrp.off("availability-response");
+
+    callback(sessionAttributes,
+             buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+  });
 }
 
 // --------------- Helpers that build all of the responses -----------------------

@@ -4,6 +4,7 @@
   "description": "",
   "main": "impromptu.js",
   "dependencies": {
+    "alexa-app": "^2.3.4",
     "node-redis-pubsub": "0.9.0"
   }
 }
