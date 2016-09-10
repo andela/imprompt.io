@@ -26,7 +26,7 @@ var mock_data = [
   {
     "name": "Scott",
     "slack": "scotter",
-    "email": "scott.carlton@andela.com",
+    "email": "scott.carleton@andela.com",
     "status": "CMIL"
   },
   {
