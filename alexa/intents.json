@@ -1,0 +1,16 @@
+{
+  "intents": [
+    {
+      "intent": "WhatsTheAvailability",
+      "slots": [
+        {
+          "name": "Name",
+          "type": "LIST_OF_NAMES"
+        }
+      ]
+    },
+    {
+      "intent": "AMAZON.HelpIntent"
+   }
+  ]
+}
