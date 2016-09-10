@@ -11,9 +11,9 @@ var mock_data = require('./stubs.js');
 
 //set NRP and bot
 var DB_URL = process.env.DB_URL,
-    CALENDAR_API_KEY = 'AIzaSyBEQu8deR88_Iv92hepXH_YbJg711u5Na0',
+    CALENDAR_API_KEY = process.env.CALENDAR_API_KEY,
     CALENDAR_URL = 'https://www.googleapis.com/calendar/v3/freeBusy?fields=calendars%2CtimeMax%2CtimeMin&key=' + CALENDAR_API_KEY,
-    HEROKU_URL = 'redis://redistogo:486829cad0f57bdaf495d39c8e402744@viperfish.redistogo.com:11475/',
+    HEROKU_URL = process.env.REDIS_URL,
     SLACK_ADMIN_CHANNEL = process.env.SLACK_ADMIN_CHANNEL,
     NRP = require('node-redis-pubsub'),
     config = {
