@@ -134,18 +134,18 @@ function checkAvailability(intent, session, callback) {
   var cardTitle         = intent.name;
   var nameOneSlot       = intent.slots.NameOne;
   var nameTwoSlot       = intent.slots.NameTwo;
+  var nameThreeSlot     = intent.slots.NameThree;
   var repromptText      = "";
   var sessionAttributes = {};
   var shouldEndSession  = false;
   var speechOutput      = "";
 
-  if (nameOneSlot || nameTwoSlot) {
-      var nameOne = nameOneSlot.value;
-      var nameTwo = nameTwoSlot.value;
+  if (nameOneSlot && nameTwoSlot && nameThreeSlot) {
+      var organizer = nameOneSlot.value;
+      var participants = [nameTwoSlot.value, nameThreeSlot.value];
 
       listenForAvailability(intent, session, callback);
-
-      checkName(nameOne);
+      checkName(organizer, participants);
   } else {
       speechOutput = "I'm not sure who they are. Please try again";
       callback(sessionAttributes,
@@ -153,9 +153,10 @@ function checkAvailability(intent, session, callback) {
   }
 }
 
-function checkName(name) {
+function checkName(organizer, participants) {
   nrp.emit("availability-check", {
-    name: name,
+    organizer: organizer,
+    participants: participants,
     timestamp: new Date()
   });
 }
@@ -163,17 +164,22 @@ function checkName(name) {
 function listenForAvailability(intent, session, callback) {
   nrp.on("availability-response", function(data, channel) {
     var cardTitle = intent.name;
-    var name      = data.name;
-    var status    = data.status;
-    var message   = data.message;
     var sessionAttributes = {};
+    var speechOutput = "";
     var repromptText = "";
     var shouldEndSession = false;
+    var participants = data.participants;
 
-    if (status === true) {
-      speechOutput = name + " is available.";
-    } else {
-      speechOutput = name + " is not available.";
+    for (var i = 0; i < participants.length; i++) {
+      if (participants[i].status) {
+        speechOutput = speechOutput + " " + participants[i].name + " is available ";
+      } else {
+        speechOutput = speechOutput + " " + participants[i].name + " is not available ";
+      }
+
+      if (i < participants.length - 1) {
+        speechOutput = speechOutput + "and";
+      }
     }
 
     nrp.off("availability-response");
