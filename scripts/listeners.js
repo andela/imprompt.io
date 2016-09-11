@@ -6,14 +6,15 @@ if (env !== "production") {
     dotenv('.env');
 }
 
-var Hashids   = require('hashids');
-var moment    = require('moment');
-var request   = require('request');
-var mock_data = require('./stubs.js');
+var async     = require('async');
 var fs        = require('fs');
-var path      = require('path');
-var Slack     = require('node-slack-upload');
+var Hashids   = require('hashids');
+var mock_data = require('./stubs.js');
+var moment    = require('moment');
 var NRP       = require('node-redis-pubsub');
+var path      = require('path');
+var request   = require('request');
+var Slack     = require('node-slack-upload');
 
 
 //set NRP and bot
@@ -32,7 +33,6 @@ var CHANNEL_ID;
 
 function bot(robot) {
     nrp.on('availability-check', function(data){
-        console.log('availability-check request!', data);
         var participants = findParticipants(data.participants);
         var organizer_data = findUser(data.organizer);
         var organizer = {name: organizer_data.name, slack_handle: organizer_data.slack};
@@ -105,6 +105,7 @@ function createVideoConference() {
 }
 
 function emitAvailability(organizer, participants) {
+    console.log("EMIT AVAILAIBILITY");
     var data = {organizer: organizer, participants:participants};
     nrp.emit('availability-response', data);
 }
@@ -114,7 +115,7 @@ function findParticipants(participant_list) {
     for (participant in participant_list) {
         var user = findUser(participant_list[participant]);
         console.log(user);
-        var data = {name: user.name, slack_handle: user.slack};
+        var data = {name: user.name, slack_handle: user.slack, email: user.email};
         result.push(data);
     }
     return result;
@@ -142,7 +143,7 @@ function getAvailability(user, cb) {
     // Calendar && Profile && SlackPresence
     isAvailableOnCalendar(user.email, function(is_available_on_calendar) {
       if(is_available_on_calendar) {
-        var participant = findUserbySlackHandle(username);
+        var participant = findUserBySlackHandle(user.slack_handle);
         //check for availability on Slack
         var is_available_on_slack = isAvailableOnSlack(participant);
         if(is_available_on_slack) {
@@ -155,6 +156,9 @@ function getAvailability(user, cb) {
               cb({status: false, message: "do not disturb"});
           }
         }
+        else {
+            cb({status: false, message: "away on slack"});
+        }
       }
       else {
         cb({status: false, message: "unavailable"});
@@ -163,6 +167,7 @@ function getAvailability(user, cb) {
 }
 
 function isAvailableOnCalendar(email, cb) {
+    console.log("is email available: ", email);
     var date = moment().format();
     var maxDate = moment().add(15, 'm').format();
     var params = {
@@ -236,7 +241,8 @@ function messageSlackUsers(link, participants) {
 
 function updateAvailability(participants, cb) {
     async.each(participants, function(participant, _cb){
-      getAvailability(participants[i], function(av) {
+        console.log("async each", participant);
+        getAvailability(participant, function(av) {
             participant.status = av.status;
             participant.message = av.message;
             _cb();

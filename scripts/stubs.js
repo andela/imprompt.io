@@ -16,6 +16,22 @@ var mock_data = [
     "voice": true,
     "presence": true
   },
+    "name": "Nad",
+    "slack": "ladi",
+    "slack_id": "U02UMGF3G",
+    "email": "nadayar@andela.com",
+    "status": "CMIL",
+    "timezone": "+1",
+    "workday": {
+      "start" : "7",
+      "lunch": 12,
+      "end": 19
+    },
+    "phone": +23450678902882,
+    "sms": true,
+    "voice": true,
+    "presence": true
+  },
   {
     "name": "Brice",
     "slack": "brice",
@@ -38,7 +54,17 @@ var mock_data = [
     "slack": "brice",
     "slack_id": "U02R6LRCZ",
     "email": "brice@andela.com",
-    "status": "DAYOP"
+    "status": "DAYOP",
+    "timezone": "+5",
+    "workday": {
+      "start" : 7,
+      "lunch": 12,
+      "end": 19
+    },
+    "phone": +23450678902882,
+    "sms": true,
+    "voice": true,
+    "presence": false
   },
   {
     "name": "Tolu",
