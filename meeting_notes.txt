@@ -1,0 +1,9 @@
+LADI: “Hey, Alexa. Are Scott and Joe available?”
+ALEXA: “I’ve started a Meeting and notified Scott. It’s after work hours in Lagos, but Joe might be available. Should I call him?”
+LADI: “Hey, Scott! We’re here at Disrupt. Alexa, no, don’t bother Joe.”
+ALEXA: “’Ok, I won’t disturb him.”
+Scott: “How’s San Francisco”
+LADI & TOLU: “Cold!”
+Scott: “So, did you win the Hackathon?”
+LADI: “Not yet...but after this demo we’re a lock!”
+TOLU: “Alexa, we’re done?”
