@@ -137,11 +137,30 @@ function findUserBySlackHandle(slack_handle) {
 
 
 function getAvailability(user) {
-    return {status: true, message: "do not disturb"};
+    // Calendar && Profile && SlackPresence
+    isAvailableOnCalendar(user.email, function(is_available_on_calendar) {
+      if(is_available_on_calendar) {
+        var participant = findUserbySlackHandle(username);
+        //check for availability on Slack
+        var is_available_on_slack = isAvailableOnSlack(participant);
+        if(is_available_on_slack) {
+          switch(participant.status) {
+            case "CMIL":
+              return {status: true, message: "available"};
+            case "WIWO":
+              return {status: false, message: "currently working on changing the world"};
+            case "DAYOP":
+              return {status: false, message: "do not disturb"};
+          }
+        }
+      }
+      else {
+        return {status: false, message: "unavailable"};
+      }
+    });
 }
 
-function isAvailableOnCalendar(user_name) {
-    user = findUser(user_name);
+function isAvailableOnCalendar(email, cb) {
     var date = moment().format();
     var maxDate = moment().add(15, 'm').format();
     console.log(date, maxDate);
@@ -151,10 +170,12 @@ function isAvailableOnCalendar(user_name) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            timeMin: "2016-09-10T21:44:40-07:00",
-            timeMax: "2016-09-10T22:58:40-07:00",
-            timeZone: "Pacific Time",
-            items: [{ id: user.email }]
+            timeMin: date,
+            timeMax: maxDate,
+            calendarExpansionMax: 5,
+            groupExpansionMax: 5,
+            timezone: 'GMT',
+            items: [{ id: email }]
         })
     }
 
@@ -162,7 +183,7 @@ function isAvailableOnCalendar(user_name) {
     request.post(params, function (err, status, body) {
         var userCal;
         body = JSON.parse(body);
-        userCal = body.calendars[user.email];
+        userCal = body.calendars[email];
 
         if (userCal.busy.length === 0) {
             console.log('user is available');
