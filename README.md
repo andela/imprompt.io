@@ -18,4 +18,20 @@ Additionally, even the minor interruption created by asking a developer if she i
 
 Utilizing strategically placed Amazon Echoes, meeting organizers use natural language to seamlessly query multiple cloud-based services which determine the availability of remote team members and initiate a teleconference using video chat or even a good old fashioned phone call. Possible participants indicate their availability and are notified of meeting requests via a UI they are already using all day long: Slack. Moreover, meetings are recorded and transcribed into notes pushed back into the appropriate Slack channel.
 
-#[](http://imprompt.io/images/design.png)
+### Design
+
+![](http://imprompt.io/images/design.png)
+
+## Alexa Sample Utterances
+
+* `WhatsTheAvailability This is {NameOne} are {NameTwo} and {NameThree} available`
+* `WhatsTheAvailability it's {NameOne} are {NameTwo} and {NameThree} available`
+* `WhatsTheAvailability it is {NameOne} are {NameTwo} and {NameThree} available`
+* `WhatsTheAvailability {NameOne} speaking are {NameTwo} and {NameThree} available`
+* `WhatsTheAvailability {NameOne} here are {NameTwo} and {NameThree} available`
+* `EndCall we're done`
+* `EndCall we are done`
+* `DontBother No don't bother`
+* `DontBother No do not bother`
+* `DontBother don't bother`
+* `DontBother do not bother`
