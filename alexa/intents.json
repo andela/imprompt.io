@@ -4,13 +4,27 @@
       "intent": "WhatsTheAvailability",
       "slots": [
         {
-          "name": "Name",
+          "name": "NameOne",
+          "type": "LIST_OF_NAMES"
+        },
+        {
+          "name": "NameTwo",
+          "type": "LIST_OF_NAMES"
+        },
+        {
+          "name": "NameThree",
           "type": "LIST_OF_NAMES"
         }
       ]
     },
     {
+      "intent": "DontBother"
+    },
+    {
+      "intent": "EndCall"
+    },
+    {
       "intent": "AMAZON.HelpIntent"
-   }
+    }
   ]
 }

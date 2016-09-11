@@ -17,17 +17,12 @@ var request   = require('request');
 var Slack     = require('node-slack-upload');
 
 
-//set NRP and bot
+// set globals
 var DB_URL = process.env.DB_URL,
     CALENDAR_API_KEY = process.env.CALENDAR_API_KEY,
     CALENDAR_URL = 'https://www.googleapis.com/calendar/v3/freeBusy?fields=calendars&key=' + CALENDAR_API_KEY,
-    HEROKU_URL = process.env.REDIS_URL,
-    SLACK_ADMIN_CHANNEL = process.env.SLACK_ADMIN_CHANNEL,
     NRP = require('node-redis-pubsub'),
-    config = {
-        url: HEROKU_URL
-    };
-    nrp = new NRP(config); // This is the NRP client
+    nrp = new NRP({url: process.env.REDIS_URL});
 
 var CHANNEL_ID;
 
@@ -35,12 +30,14 @@ function bot(robot) {
     nrp.on('availability-check', function(data){
         var participants = findParticipants(data.participants);
         var organizer_data = findUser(data.organizer);
-        var organizer = {name: organizer_data.name, slack_handle: organizer_data.slack};
+        var organizer = {
+                            name: organizer_data.name,
+                            slack_handle: organizer_data.slack
+                        };
         updateAvailability(participants, function(err) {
             if(err) {
                 console.log("updateAvailability failed", err);
-            }
-            else {
+            } else {
                 emitAvailability(organizer, participants);
             }
         });
@@ -106,8 +103,8 @@ function createVideoConference() {
 }
 
 function emitAvailability(organizer, participants) {
-    console.log("EMIT AVAILAIBILITY");
-    var data = {organizer: organizer, participants:participants};
+    console.log("EMIT AVAILABILITY");
+    var data = {organizer: organizer, participants: participants};
     nrp.emit('availability-response', data);
 }
 
@@ -115,7 +112,6 @@ function findParticipants(participant_list) {
     var result = [];
     for (participant in participant_list) {
         var user = findUser(participant_list[participant]);
-        console.log(user);
         var data = {name: user.name, slack_handle: user.slack, email: user.email};
         result.push(data);
     }
@@ -139,15 +135,19 @@ function findUserBySlackHandle(slack_handle) {
     }
 }
 
-
 function getAvailability(user, cb) {
     // Calendar && Profile && SlackPresence
     isAvailableOnCalendar(user.email, function(is_available_on_calendar) {
-      if(is_available_on_calendar) {
+      if (is_available_on_calendar) {
         var participant = findUserBySlackHandle(user.slack_handle);
-        //check for availability on Slack
+
+        // check for availability on Slack
         var is_available_on_slack = isAvailableOnSlack(participant);
-        if(is_available_on_slack) {
+
+        if (is_available_on_slack) {
+            console.log("PARTICIPANT STATUS");
+            console.log(participant.status);
+
           switch(participant.status) {
             case "CMIL":
               cb({status: true, message: "available"});
@@ -156,12 +156,10 @@ function getAvailability(user, cb) {
             case "DAYOP":
               cb({status: false, message: "do not disturb"});
           }
-        }
-        else {
+        } else {
             cb({status: false, message: "away on slack"});
         }
-      }
-      else {
+      } else {
         cb({status: false, message: "unavailable"});
       }
     });
@@ -191,6 +189,12 @@ function isAvailableOnCalendar(email, cb) {
     request.post(params, function (err, status, body) {
         var userCal;
         body = JSON.parse(body);
+        if (body.error && body.error.code === 401) {
+            console.log("GOOGLE CALENDAR 401");
+            console.log(body.error.message);
+            return
+        }
+        console.log(body);
         userCal = body.calendars[email];
 
         if (userCal.busy.length === 0) {
@@ -242,15 +246,24 @@ function messageSlackUsers(link, participants) {
 }
 
 function updateAvailability(participants, cb) {
-    async.each(participants, function(participant, _cb){
-        console.log("async each", participant);
-        getAvailability(participant, function(av) {
-            participant.status = av.status;
-            participant.message = av.message;
-            _cb();
-        });
-    }, function (err) {
+    console.log("UPDATE AVAILABILITY");
+    async.each(participants, updateAvailabilityStatus, function (err) {
+        if (err) {
+            console.log("Async Failed");
+        } else {
+            console.log("Async Succeeded");
+        }
         cb(err);
+    });
+}
+
+function updateAvailabilityStatus(participant, cb) {
+    console.log("async each", participant);
+    getAvailability(participant, function(av) {
+        console.log("CALLBACK IN UPDATE");
+        participant.status  = av.status;
+        participant.message = av.message;
+        cb(null); // called for each participant for async to keep count
     });
 }
 
