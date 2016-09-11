@@ -44,6 +44,7 @@ function bot(robot) {
     });
 
     nrp.on('start-call', function(data) {
+        nrp.off('start-call');
         console.log('start-call request!', data);
         var conference_link = createVideoConference();
         var users = data.participants;
