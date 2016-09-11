@@ -19,7 +19,7 @@ var DB_URL = process.env.DB_URL,
     config = {
         url: HEROKU_URL
     };
-    nrp = new NRP(config); // This is the NRP client 
+    nrp = new NRP(config); // This is the NRP client
 
 function bot(robot) {
     nrp.on('availability-check', function(data){
@@ -35,9 +35,58 @@ function bot(robot) {
         console.log('start-call request!', data);
         var conference_link = createVideoConference();
         //TODO: SEND LINK TO USERS ON SLACK
-        nrp.emit('call-started', data);
-
+        var users = data.participants;
+        users.push(data.organizer);
+        messageSlackUsers(conference_link, users);
+        // nrp.emit('call-started', {});
     });
+}
+
+function messageSlackUsers(link, participants) {
+    console.log("Message Slack Users");
+    var slackIds = [];
+    for (i in participants) {
+        console.log("Participant");
+        console.log(participants[i].slack_handle);
+        slackIds.push(findUserBySlackHandle(participants[i].slack_handle).slack_id);
+    }
+    console.log(slackIds);
+    channelId = createMultiParty(slackIds, );
+    console.log(channelId);
+
+    params = {
+        url: "https://slack.com/api/chat.postMessage",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        qs: {
+            token: process.env.HUBOT_SLACK_TOKEN,
+            channel: channelId,
+            text: "Here's your meeting link " + link
+        }
+    }
+
+    request.get(params, function (err, status, body) {
+        console.log(err, body);
+    });
+}
+
+
+function createMultiParty(slackIds) {
+    params = {
+        url: "https://slack.com/api/mpim.open?users=U02UMGF3G%2CU1C9W79L6%2CU02R6LRCZ&token=xoxb-78352685943-qB0zoMyBHKLbN1uexkc5JwqF",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        qs: {
+            users: slackIds.join(","),
+            token: process.env.HUBOT_SLACK_TOKEN
+        }
+    }
+    request.get(params, function (err, status, body){
+        console.log(err, body);
+        return(body.group.id);
+    })
 }
 
 function createVideoConference() {
@@ -69,6 +118,15 @@ function findUser(name) {
         }
     }
 }
+
+function findUserBySlackHandle(slack_handle) {
+    for (i in mock_data) {
+        if (mock_data[i].slack.toLowerCase() ===  slack_handle.toLowerCase()) {
+            return mock_data[i];
+        }
+    }
+}
+
 
 function getAvailability(user) {
     return {status: true, message: "do not disturb"};
