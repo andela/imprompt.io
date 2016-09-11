@@ -82,6 +82,8 @@ function onIntent(intentRequest, session, callback) {
     // Dispatch to your skill's intent handlers
     if ("WhatsTheAvailability" === intentName) {
         checkAvailability(intent, session, callback);
+    } else if ("EndCall" === intentName) {
+      endCall(intent, session, callback);
     } else if ("AMAZON.HelpIntent" === intentName) {
         getWelcomeResponse(callback);
     } else if ("AMAZON.StopIntent" === intentName || "AMAZON.CancelIntent" === intentName) {
@@ -163,6 +165,8 @@ function checkName(organizer, participants) {
 
 function listenForAvailability(intent, session, callback) {
   nrp.on("availability-response", function(data, channel) {
+    nrp.off("availability-response");
+
     var cardTitle = intent.name;
     var sessionAttributes = {};
     var speechOutput = "";
@@ -174,23 +178,50 @@ function listenForAvailability(intent, session, callback) {
     sessionAttributes.organizer = data.organizer;
     sessionAttributes.participants = data.participants;
 
-    for (var i = 0; i < participants.length; i++) {
-      if (participants[i].status) {
-        speechOutput = speechOutput + " " + participants[i].name + " is available ";
-      } else {
-        speechOutput = speechOutput + " " + participants[i].name + " is not available ";
-      }
+    // start the call
+    nrp.emit("start-call", {
+      organizer: sessionAttributes.organizer,
+      participants: sessionAttributes.participants,
+      timestamp: new Date()
+    });
 
-      if (i < participants.length - 1) {
-        speechOutput = speechOutput + "and";
-      }
-    }
+    nrp.on("call-started", function(data, channel) {
+      nrp.off("call-started");
 
-    nrp.off("availability-response");
+      speechOutput = "I’ve started a Hangout and ";
 
-    callback(sessionAttributes,
+      // sort by available participants first
+      participants.sort(function(x, y) {
+        return (x.status === y.status)? 0 : x.status ? -1 : 1;
+      });
+
+      speechOutput = speechOutput + " pinged " + participants[0].name + ".";
+      speechOutput = speechOutput + " " + participants[1].name + " does not want to be disturbed.";
+
+      callback(sessionAttributes,
              buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+    });
   });
+}
+
+/**
+ * End the call.
+ */
+function endCall(intent, session, callback) {
+  var cardTitle         = intent.name;
+  var repromptText      = "";
+  var sessionAttributes = session.attributes;
+  var shouldEndSession  = false;
+  var speechOutput      = "I’m transcribing the notes now. I’ll put them in your slack channel when they’re ready.";
+
+  nrp.emit("end-call", {
+    organizer: sessionAttributes.organizer,
+    participants: sessionAttributes.participants,
+    timestamp: new Date()
+  });
+
+  callback(sessionAttributes,
+           buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
 }
 
 // --------------- Helpers that build all of the responses -----------------------
