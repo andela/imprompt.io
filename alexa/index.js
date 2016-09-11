@@ -194,8 +194,8 @@ function listenForAvailability(intent, session, callback) {
         timestamp: new Date()
       });
 
-      speechOutput = "I’ve started a video chat and ";
-      speechOutput = speechOutput + " notified " + participants[0].name + " and " + participants[1].name + ".;
+      speechOutput = "I’ve started a meeting and ";
+      speechOutput = speechOutput + " notified " + participants[0].name + " and " + participants[1].name + ".";
     }
 
     if (participants[0].status === true && participants[1].status === false) {
@@ -206,7 +206,7 @@ function listenForAvailability(intent, session, callback) {
         timestamp: new Date()
       });
 
-      speechOutput = "I’ve started a video chat and ";
+      speechOutput = "I’ve started a meeting and ";
       speechOutput = speechOutput + " notified " + participants[0].name + ".";
       speechOutput = speechOutput + " It’s after work hours in Lagos, but " +
                       participants[1].name + " might be available. Should I call him?";
