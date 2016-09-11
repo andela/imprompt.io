@@ -1,1 +1,1 @@
-web: sh -c 'cd slack/bot/ && exec bin/hubot -a slack'
+web: bin/hubot -a slack
