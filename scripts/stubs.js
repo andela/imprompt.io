@@ -14,6 +14,13 @@ var mock_data = [
     "status": "DAYOP"
   },
   {
+    "name": "Bryce",
+    "slack": "brice",
+    "slack_id": "U02R6LRCZ",
+    "email": "brice@andela.com",
+    "status": "DAYOP"
+  },
+  {
     "name": "Tolu",
     "slack": "everybody",
     "slack_id": "U02SB0VD1",
