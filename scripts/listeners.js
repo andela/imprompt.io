@@ -6,24 +6,17 @@ if (env !== "production") {
     dotenv('.env');
 }
 
-var Hashids = require('hashids');
-var moment = require('moment');
-var request = require('request');
-
+var Hashids   = require('hashids');
+var moment    = require('moment');
+var request   = require('request');
 var mock_data = require('./stubs.js');
+var NRP       = require('node-redis-pubsub');
 
 
 //set NRP and bot
-var DB_URL = process.env.DB_URL,
-    CALENDAR_API_KEY = process.env.CALENDAR_API_KEY,
+var CALENDAR_API_KEY = process.env.CALENDAR_API_KEY,
     CALENDAR_URL = 'https://www.googleapis.com/calendar/v3/freeBusy?fields=calendars%2CtimeMax%2CtimeMin&key=' + CALENDAR_API_KEY,
-    HEROKU_URL = process.env.REDIS_URL,
-    SLACK_ADMIN_CHANNEL = process.env.SLACK_ADMIN_CHANNEL,
-    NRP = require('node-redis-pubsub'),
-    config = {
-        url: HEROKU_URL
-    };
-    nrp = new NRP(config); // This is the NRP client
+    nrp = new NRP({url: process.env.REDIS_URL}); // This is the NRP client
 
 function bot(robot) {
     nrp.on('availability-check', function(data){
@@ -60,7 +53,7 @@ function messageSlackUsers(link, participants) {
             qs: {
                 token: process.env.HUBOT_SLACK_TOKEN,
                 channel: channelId,
-                text: "Here's your meeting link " + link
+                text: participants[participants.length-1].name + " has asked you to meet at the watercooler: " + link
             }
         }
 
