@@ -96,7 +96,8 @@ function fileUpload(groupId) {
 
 function createVideoConference() {
     var hashids = new Hashids();
-    var random_int = Math.ceil(Math.random() * 10000);
+    // var random_int = Math.ceil(Math.random() * 10000);
+    var random_int = 1234567890;
     var slug = hashids.encode(random_int);
     var url = "http://appear.in/" + slug;
     return url;
