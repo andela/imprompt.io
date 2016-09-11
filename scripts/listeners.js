@@ -118,6 +118,7 @@ function findParticipants(participant_list) {
     return result;
 }
 
+
 function findUser(name) {
     for (i in mock_data) {
         if (mock_data[i].name.toLowerCase() ===  name.toLowerCase()) {
@@ -161,17 +162,50 @@ function isAvailableOnCalendar(user_name) {
     request.post(params, function (err, status, body) {
         var userCal;
         body = JSON.parse(body);
-        console.log(err, body, body.calendars[user.email].errors);
         userCal = body.calendars[user.email];
 
-        if (userCal.busy.length > 0) {
-            console.log('user is not available');
-            return false;
-        }
         if (userCal.busy.length === 0) {
             console.log('user is available');
-            return true;
+            cb(true);
         }
+        if (userCal.busy.length > 0) {
+            console.log('user is not available');
+            cb(false);
+        }
+    });
+}
+
+function isAvailableOnSlack(participant) {
+  return participant.presence;
+}
+
+function messageSlackUsers(link, participants) {
+    console.log("Message Slack Users");
+    var slackIds = [];
+    for (i in participants) {
+        slackIds.push(findUserBySlackHandle(participants[i].slack_handle).slack_id);
+    }
+    console.log(slackIds);
+    createMultiParty(slackIds, function (channelId) {
+        params = {
+            url: "https://slack.com/api/chat.postMessage",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            qs: {
+                token: process.env.HUBOT_SLACK_TOKEN,
+                channel: channelId,
+                text: "Here's your meeting link " + link
+            }
+        }
+
+        request.get(params, function (err, status, body) {
+            if(err) {
+                console.log(err, body);
+                return;
+            }
+            nrp.emit('call-started', {});
+        });
     });
 }
 
