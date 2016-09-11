@@ -17,17 +17,12 @@ var request   = require('request');
 var Slack     = require('node-slack-upload');
 
 
-//set NRP and bot
+// set globals
 var DB_URL = process.env.DB_URL,
     CALENDAR_API_KEY = process.env.CALENDAR_API_KEY,
     CALENDAR_URL = 'https://www.googleapis.com/calendar/v3/freeBusy?fields=calendars&key=' + CALENDAR_API_KEY,
-    HEROKU_URL = process.env.REDIS_URL,
-    SLACK_ADMIN_CHANNEL = process.env.SLACK_ADMIN_CHANNEL,
     NRP = require('node-redis-pubsub'),
-    config = {
-        url: HEROKU_URL
-    };
-    nrp = new NRP(config); // This is the NRP client
+    nrp = new NRP({url: process.env.REDIS_URL});
 
 var CHANNEL_ID;
 
@@ -35,7 +30,10 @@ function bot(robot) {
     nrp.on('availability-check', function(data){
         var participants = findParticipants(data.participants);
         var organizer_data = findUser(data.organizer);
-        var organizer = {name: organizer_data.name, slack_handle: organizer_data.slack};
+        var organizer = {
+                            name: organizer_data.name,
+                            slack_handle: organizer_data.slack
+                        };
         updateAvailability(participants, function(err) {
             if(err) {
                 console.log("updateAvailability failed", err);
@@ -105,7 +103,7 @@ function createVideoConference() {
 }
 
 function emitAvailability(organizer, participants) {
-    console.log("EMIT AVAILAIBILITY");
+    console.log("EMIT AVAILABILITY");
     var data = {organizer: organizer, participants:participants};
     nrp.emit('availability-response', data);
 }
