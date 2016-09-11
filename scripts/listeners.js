@@ -10,6 +10,9 @@ var Hashids   = require('hashids');
 var moment    = require('moment');
 var request   = require('request');
 var mock_data = require('./stubs.js');
+var fs        = require('fs');
+var path      = require('path');
+var Slack     = require('node-slack-upload');
 var NRP       = require('node-redis-pubsub');
 
 
@@ -24,6 +27,8 @@ var DB_URL = process.env.DB_URL,
         url: HEROKU_URL
     };
     nrp = new NRP(config); // This is the NRP client
+
+var CHANNEL_ID;
 
 function bot(robot) {
     nrp.on('availability-check', function(data){
@@ -41,6 +46,42 @@ function bot(robot) {
         var users = data.participants;
         users.push(data.organizer);
         messageSlackUsers(conference_link, users);
+    });
+
+    nrp.on('end-call', function(data) {
+        console.log('end-call request!', data);
+        fileUpload(CHANNEL_ID);
+    });
+}
+
+function messageSlackUsers(link, participants) {
+    console.log("Message Slack Users");
+    var slackIds = [];
+    for (i in participants) {
+        slackIds.push(findUserBySlackHandle(participants[i].slack_handle).slack_id);
+    }
+    console.log(slackIds);
+    createMultiParty(slackIds, function (channelId) {
+        CHANNEL_ID = channelId
+        params = {
+            url: "https://slack.com/api/chat.postMessage",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            qs: {
+                token: process.env.HUBOT_SLACK_TOKEN,
+                channel: channelId,
+                text: participants[participants.length-1].name + " has asked you to meet at the watercooler: " + link
+            }
+        }
+
+        request.get(params, function (err, status, body) {
+            if(err) {
+                console.log(err, body);
+                return;
+            }
+            nrp.emit('call-started', {});
+        });
     });
 }
 
@@ -62,6 +103,23 @@ function createMultiParty(slackIds, cb) {
         console.log(body.group.id);
         cb(body.group.id);
     })
+}
+
+function fileUpload(groupId) {
+  var slack = new Slack(process.env.HUBOT_SLACK_TOKEN);
+
+  slack.uploadFile({
+    file: fs.createReadStream(path.join(__dirname, '..', 'meeting_notes.txt')),
+    filetype: 'post',
+    title: 'meeting notes',
+    channels: groupId
+  }, function(err) {
+    if (err) {
+      console.error(err);
+    } else {
+      console.log('file uploaded');
+    }
+  });
 }
 
 function createVideoConference() {
