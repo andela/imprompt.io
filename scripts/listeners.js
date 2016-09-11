@@ -1,6 +1,10 @@
 //set env
-var env = require('node-env-file');
-env('.env');
+var dotenv = require('node-env-file');
+var env = process.env.NODE_ENV || 'development';
+
+if (env !== "production") {
+    dotenv('.env');
+}
 
 var Hashids = require('hashids');
 var moment = require('moment');
