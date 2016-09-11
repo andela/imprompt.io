@@ -236,7 +236,4 @@ function updateAvailability(participants) {
     }
 }
 
-getAvailability(mock_data[0]);
-
-
 module.exports = bot;
