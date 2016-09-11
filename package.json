@@ -5,6 +5,7 @@
   "author": "Ladi Adenusi <andela-ladenusi <ladi.adenusi@andela.co>",
   "description": "A simple helpful robot for your Company",
   "dependencies": {
+    "async": "^2.0.1",
     "hashids": "^1.1.1",
     "hubot": "^2.19.0",
     "hubot-diagnostics": "0.0.1",
@@ -23,8 +24,8 @@
     "moment": "^2.14.1",
     "node-env-file": "^0.1.8",
     "node-redis-pubsub": "^0.9.0",
-    "request": "^2.74.0",
     "node-slack-upload": "1.1.1",
+    "request": "^2.74.0",
     "shelljs": "^0.7.4"
   },
   "engines": {

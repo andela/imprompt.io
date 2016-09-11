@@ -36,8 +36,14 @@ function bot(robot) {
         var participants = findParticipants(data.participants);
         var organizer_data = findUser(data.organizer);
         var organizer = {name: organizer_data.name, slack_handle: organizer_data.slack};
-        updateAvailability(participants);
-        emitAvailability(organizer, participants);
+        updateAvailability(participants, function(err) {
+            if(err) {
+                console.log("updateAvailability failed", err);
+            }
+            else {
+                emitAvailability(organizer, participants);
+            }
+        });
     });
 
     nrp.on('start-call', function(data) {
@@ -132,7 +138,7 @@ function findUserBySlackHandle(slack_handle) {
 }
 
 
-function getAvailability(user) {
+function getAvailability(user, cb) {
     // Calendar && Profile && SlackPresence
     isAvailableOnCalendar(user.email, function(is_available_on_calendar) {
       if(is_available_on_calendar) {
@@ -142,16 +148,16 @@ function getAvailability(user) {
         if(is_available_on_slack) {
           switch(participant.status) {
             case "CMIL":
-              return {status: true, message: "available"};
+              cb({status: true, message: "available"});
             case "WIWO":
-              return {status: false, message: "currently working on changing the world"};
+              cb({status: false, message: "currently working on changing the world"});
             case "DAYOP":
-              return {status: false, message: "do not disturb"};
+              cb({status: false, message: "do not disturb"});
           }
         }
       }
       else {
-        return {status: false, message: "unavailable"};
+        cb({status: false, message: "unavailable"});
       }
     });
 }
@@ -228,12 +234,16 @@ function messageSlackUsers(link, participants) {
     });
 }
 
-function updateAvailability(participants) {
-    for (participant in participants) {
-        var av = getAvailability(participants[participant]);
-        participant.status = av.status;
-        participant.message = av.message;
-    }
+function updateAvailability(participants, cb) {
+    async.each(participants, function(participant, _cb){
+      getAvailability(participants[i], function(av) {
+            participant.status = av.status;
+            participant.message = av.message;
+            _cb();
+        });
+    }, function (err) {
+        cb(err);
+    });
 }
 
 module.exports = bot;
