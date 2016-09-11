@@ -77,7 +77,7 @@ function messageSlackUsers(link, participants) {
 
 function createMultiParty(slackIds, cb) {
     params = {
-        url: "https://slack.com/api/mpim.open?users=U02UMGF3G%2CU1C9W79L6%2CU02R6LRCZ&token=xoxb-78352685943-qB0zoMyBHKLbN1uexkc5JwqF",
+        url: "https://slack.com/api/mpim.open",
         headers: {
             'Content-Type': 'application/json'
         },
