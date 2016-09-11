@@ -191,11 +191,11 @@ function isAvailableOnCalendar(email, cb) {
         body = JSON.parse(body);
         console.log("CURRENT ACCESS_TOKEN");
         console.log(process.env.ACCESS_TOKEN);
-        // if (body.error && body.error.code === 401) {
-        //     console.log("GOOGLE CALENDAR 401");
-        //     console.log(body.error.message);
-        //     return
-        // }
+        if (body.error && body.error.code === 401) {
+            console.log("GOOGLE CALENDAR 401");
+            console.log(body.error.message);
+            return
+        }
         console.log(body);
         userCal = body.calendars[email];
 
