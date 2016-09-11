@@ -81,10 +81,13 @@ function onIntent(intentRequest, session, callback) {
 
     // Dispatch to your skill's intent handlers
     if ("WhatsTheAvailability" === intentName) {
-        checkAvailability(intent, session, callback);
+      checkAvailability(intent, session, callback);
     } else if ("EndCall" === intentName) {
       endCall(intent, session, callback);
-    } else if ("AMAZON.HelpIntent" === intentName) {
+    } else if ("DontBother" === intentName) {
+      ignoreCall(intent, session, callback);
+    }
+    else if ("AMAZON.HelpIntent" === intentName) {
         getWelcomeResponse(callback);
     } else if ("AMAZON.StopIntent" === intentName || "AMAZON.CancelIntent" === intentName) {
         handleSessionEndRequest(callback);
@@ -195,8 +198,9 @@ function listenForAvailability(intent, session, callback) {
         return (x.status === y.status)? 0 : x.status ? -1 : 1;
       });
 
-      speechOutput = speechOutput + " pinged " + participants[0].name + ".";
-      speechOutput = speechOutput + " " + participants[1].name + " does not want to be disturbed.";
+      speechOutput = speechOutput + " notified " + participants[0].name + ".";
+      speechOutput = speechOutput + " It’s after work hours in Lagos, but " + 
+                      participants[1].name + " might be available. Should I call him?";
 
       callback(sessionAttributes,
              buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
@@ -219,6 +223,17 @@ function endCall(intent, session, callback) {
     participants: sessionAttributes.participants,
     timestamp: new Date()
   });
+
+  callback(sessionAttributes,
+           buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+}
+
+function ignoreCall(intent, session, callback) {
+  var cardTitle         = intent.name;
+  var repromptText      = "";
+  var sessionAttributes = session.attributes;
+  var shouldEndSession  = false;
+  var speechOutput      = "Ok, I won't disturb him.";
 
   callback(sessionAttributes,
            buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
