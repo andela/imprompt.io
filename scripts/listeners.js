@@ -225,6 +225,7 @@ function messageSlackUsers(link, participants) {
             qs: {
                 token: process.env.HUBOT_SLACK_TOKEN,
                 channel: channelId,
+                as_user: true,
                 text: participants[participants.length-1].name + " has asked you to meet at the watercooler: " + link
             }
         }
