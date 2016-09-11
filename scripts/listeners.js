@@ -189,11 +189,13 @@ function isAvailableOnCalendar(email, cb) {
     request.post(params, function (err, status, body) {
         var userCal;
         body = JSON.parse(body);
-        if (body.error && body.error.code === 401) {
-            console.log("GOOGLE CALENDAR 401");
-            console.log(body.error.message);
-            return
-        }
+        console.log("CURRENT ACCESS_TOKEN");
+        console.log(process.env.ACCESS_TOKEN);
+        // if (body.error && body.error.code === 401) {
+        //     console.log("GOOGLE CALENDAR 401");
+        //     console.log(body.error.message);
+        //     return
+        // }
         console.log(body);
         userCal = body.calendars[email];
 
