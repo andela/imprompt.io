@@ -54,37 +54,6 @@ function bot(robot) {
     });
 }
 
-function messageSlackUsers(link, participants) {
-    console.log("Message Slack Users");
-    var slackIds = [];
-    for (i in participants) {
-        slackIds.push(findUserBySlackHandle(participants[i].slack_handle).slack_id);
-    }
-    console.log(slackIds);
-    createMultiParty(slackIds, function (channelId) {
-        CHANNEL_ID = channelId
-        params = {
-            url: "https://slack.com/api/chat.postMessage",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            qs: {
-                token: process.env.HUBOT_SLACK_TOKEN,
-                channel: channelId,
-                text: participants[participants.length-1].name + " has asked you to meet at the watercooler: " + link
-            }
-        }
-
-        request.get(params, function (err, status, body) {
-            if(err) {
-                console.log(err, body);
-                return;
-            }
-            nrp.emit('call-started', {});
-        });
-    });
-}
-
 function createMultiParty(slackIds, cb) {
     params = {
         url: "https://slack.com/api/mpim.open",
@@ -236,6 +205,7 @@ function messageSlackUsers(link, participants) {
     }
     console.log(slackIds);
     createMultiParty(slackIds, function (channelId) {
+        CHANNEL_ID = channelId
         params = {
             url: "https://slack.com/api/chat.postMessage",
             headers: {
@@ -244,7 +214,7 @@ function messageSlackUsers(link, participants) {
             qs: {
                 token: process.env.HUBOT_SLACK_TOKEN,
                 channel: channelId,
-                text: "Here's your meeting link " + link
+                text: participants[participants.length-1].name + " has asked you to meet at the watercooler: " + link
             }
         }
 
