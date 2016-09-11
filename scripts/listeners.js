@@ -14,9 +14,16 @@ var NRP       = require('node-redis-pubsub');
 
 
 //set NRP and bot
-var CALENDAR_API_KEY = process.env.CALENDAR_API_KEY,
-    CALENDAR_URL = 'https://www.googleapis.com/calendar/v3/freeBusy?fields=calendars%2CtimeMax%2CtimeMin&key=' + CALENDAR_API_KEY,
-    nrp = new NRP({url: process.env.REDIS_URL}); // This is the NRP client
+var DB_URL = process.env.DB_URL,
+    CALENDAR_API_KEY = process.env.CALENDAR_API_KEY,
+    CALENDAR_URL = 'https://www.googleapis.com/calendar/v3/freeBusy?fields=calendars&key=' + CALENDAR_API_KEY,
+    HEROKU_URL = process.env.REDIS_URL,
+    SLACK_ADMIN_CHANNEL = process.env.SLACK_ADMIN_CHANNEL,
+    NRP = require('node-redis-pubsub'),
+    config = {
+        url: HEROKU_URL
+    };
+    nrp = new NRP(config); // This is the NRP client
 
 function bot(robot) {
     nrp.on('availability-check', function(data){
@@ -136,17 +143,16 @@ function isAvailableOnCalendar(user_name) {
     user = findUser(user_name);
     var date = moment().format();
     var maxDate = moment().add(15, 'm').format();
+    console.log(date, maxDate);
     var params = {
         url: CALENDAR_URL,
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            timeMin: date,
-            timeMax: maxDate,
-            calendarExpansionMax: 5,
-            groupExpansionMax: 5,
-            timezone: 'GMT',
+            timeMin: "2016-09-10T21:44:40-07:00",
+            timeMax: "2016-09-10T22:58:40-07:00",
+            timeZone: "Pacific Time",
             items: [{ id: user.email }]
         })
     }
@@ -154,17 +160,17 @@ function isAvailableOnCalendar(user_name) {
     console.log('checking calendar...');
     request.post(params, function (err, status, body) {
         var userCal;
-        console.log(err, body);
         body = JSON.parse(body);
+        console.log(err, body, body.calendars[user.email].errors);
         userCal = body.calendars[user.email];
 
-        if (userCal.busy.length === 0) {
-            console.log('user is available');
-            return true;
-        }
         if (userCal.busy.length > 0) {
             console.log('user is not available');
             return false;
+        }
+        if (userCal.busy.length === 0) {
+            console.log('user is available');
+            return true;
         }
     });
 }
@@ -176,9 +182,6 @@ function updateAvailability(participants) {
         participant.message = av.message;
     }
 }
-
-
-
 
 
 module.exports = bot;
