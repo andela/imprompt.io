@@ -38,11 +38,9 @@ function bot(robot) {
     nrp.on('start-call', function(data) {
         console.log('start-call request!', data);
         var conference_link = createVideoConference();
-        //TODO: SEND LINK TO USERS ON SLACK
         var users = data.participants;
         users.push(data.organizer);
         messageSlackUsers(conference_link, users);
-        // nrp.emit('call-started', {});
     });
 }
 
@@ -67,7 +65,11 @@ function messageSlackUsers(link, participants) {
         }
 
         request.get(params, function (err, status, body) {
-            console.log(err, body);
+            if(err) {
+                console.log(err, body);
+                return;
+            }
+            nrp.emit('call-started', {});
         });
     });
 }
@@ -108,7 +110,8 @@ function emitAvailability(organizer, participants) {
 function findParticipants(participant_list) {
     var result = [];
     for (participant in participant_list) {
-        var user = findUser(participant);
+        var user = findUser(participant_list[participant]);
+        console.log(user);
         var data = {name: user.name, slack_handle: user.slack};
         result.push(data);
     }
@@ -175,7 +178,7 @@ function isAvailableOnCalendar(user_name) {
 
 function updateAvailability(participants) {
     for (participant in participants) {
-        var av = getAvailability(participant);
+        var av = getAvailability(participants[participant]);
         participant.status = av.status;
         participant.message = av.message;
     }
