@@ -46,33 +46,30 @@ function messageSlackUsers(link, participants) {
     console.log("Message Slack Users");
     var slackIds = [];
     for (i in participants) {
-        console.log("Participant");
-        console.log(participants[i].slack_handle);
         slackIds.push(findUserBySlackHandle(participants[i].slack_handle).slack_id);
     }
     console.log(slackIds);
-    channelId = createMultiParty(slackIds, );
-    console.log(channelId);
-
-    params = {
-        url: "https://slack.com/api/chat.postMessage",
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        qs: {
-            token: process.env.HUBOT_SLACK_TOKEN,
-            channel: channelId,
-            text: "Here's your meeting link " + link
+    createMultiParty(slackIds, function (channelId) {
+        params = {
+            url: "https://slack.com/api/chat.postMessage",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            qs: {
+                token: process.env.HUBOT_SLACK_TOKEN,
+                channel: channelId,
+                text: "Here's your meeting link " + link
+            }
         }
-    }
 
-    request.get(params, function (err, status, body) {
-        console.log(err, body);
+        request.get(params, function (err, status, body) {
+            console.log(err, body);
+        });
     });
 }
 
 
-function createMultiParty(slackIds) {
+function createMultiParty(slackIds, cb) {
     params = {
         url: "https://slack.com/api/mpim.open?users=U02UMGF3G%2CU1C9W79L6%2CU02R6LRCZ&token=xoxb-78352685943-qB0zoMyBHKLbN1uexkc5JwqF",
         headers: {
@@ -85,13 +82,16 @@ function createMultiParty(slackIds) {
     }
     request.get(params, function (err, status, body){
         console.log(err, body);
-        return(body.group.id);
+        console.log("Multi Party Channel");
+        body = JSON.parse(body);
+        console.log(body.group.id);
+        cb(body.group.id);
     })
 }
 
 function createVideoConference() {
     var hashids = new Hashids();
-    var slug = hashids.encode(Math.random() * 10);
+    var slug = hashids.encode("12324732324523");
     var url = "http://appear.in/" + slug;
     return url;
 }
