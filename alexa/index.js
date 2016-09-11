@@ -181,30 +181,37 @@ function listenForAvailability(intent, session, callback) {
     sessionAttributes.organizer = data.organizer;
     sessionAttributes.participants = data.participants;
 
-    // start the call
-    nrp.emit("start-call", {
-      organizer: sessionAttributes.organizer,
-      participants: sessionAttributes.participants,
-      timestamp: new Date()
+    // sort by available participants first
+    participants.sort(function(x, y) {
+      return (x.status === y.status)? 0 : x.status ? -1 : 1;
     });
 
-    nrp.on("call-started", function(data, channel) {
-      nrp.off("call-started");
-
-      speechOutput = "I’ve started a video chat and ";
-
-      // sort by available participants first
-      participants.sort(function(x, y) {
-        return (x.status === y.status)? 0 : x.status ? -1 : 1;
+    if (participants[0].status === true && participants[1].status === false) {
+      // start the call
+      nrp.emit("start-call", {
+        organizer: sessionAttributes.organizer,
+        participants: sessionAttributes.participants,
+        timestamp: new Date()
       });
 
+      speechOutput = "I’ve started a video chat and ";
       speechOutput = speechOutput + " notified " + participants[0].name + ".";
       speechOutput = speechOutput + " It’s after work hours in Lagos, but " + 
                       participants[1].name + " might be available. Should I call him?";
+    }
 
-      callback(sessionAttributes,
-             buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+    if (participants[0].status === false && participants[1].status === false) {
+      speechOutput =  "Both " + participants[0].name + " and " + 
+                      participants[1].name + " are unavailable right now. " +
+                      " Would you like to call someone else?";
+    }
+
+    nrp.on("call-started", function(data, channel) {
+      nrp.off("call-started");
     });
+
+    callback(sessionAttributes,
+             buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
   });
 }
 
